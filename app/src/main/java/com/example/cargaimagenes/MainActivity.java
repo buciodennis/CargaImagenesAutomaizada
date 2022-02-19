@@ -33,10 +33,48 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         queue = Volley.newRequestQueue(this);
 
+        RecyclerView reyclerViewHero = (RecyclerView) findViewById(R.id.reyclerViewUser);
+        reyclerViewHero.setLayoutManager(new LinearLayoutManager(this));
 
 
+        JsonRequest jsonRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                "https://simplifiedcoding.net/demos/view-flipper/heroes.php",
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Gson gson = new Gson();
+                Type lsHerosType = new TypeToken<List<Hero>>(){}.getType();
+                try {
+                    Log.d("JSONRequest", response.get("heroes").toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                List<Hero> lsHero = null;
+                try {
+                    lsHero = gson.fromJson(response.get("heroes").toString(), lsHerosType);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                for (Hero item:  lsHero){
+                    Log.d("JSONREQUEST", "Id: " + item.getName() + " url: " +
+                            item.getImageurl());
+                }
 
 
+                HeroAdapter mAdapter = new HeroAdapter(lsHero, getApplicationContext());
+                reyclerViewHero.setAdapter(mAdapter);
+
+
+            }
+        },
+                error -> {
+                    error.printStackTrace();
+                    Log.d("Error", "Ocurrio un error");
+                }
+        );
+        queue.add(jsonRequest);
 
         List<Hero> list = new ArrayList<Hero>();
         Hero uno = new Hero ("spiderman", "fhdjskkajh");
